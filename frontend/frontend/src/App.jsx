@@ -312,25 +312,42 @@ ${suggestion}
 
               </p>
 
-              <button
+              {
+                item.completed
+                  ?
 
-                onClick={() => {
+                  <p className="text-green-400 mt-3">
+                    ✅ Completed
+                  </p>
 
-                  const updated = [...tasks]
+                  :
 
-                  updated[index].completed = true
+                  <button
 
-                  setTasks(updated)
+                    onClick={() => {
 
-                }}
+                      const updated = [...tasks]
 
-                className="mt-3 bg-green-600 px-4 py-2 rounded-xl"
+                      updated[index].completed = true
 
-              >
+                      setTasks(updated)
 
-                Mark Complete
+                      localStorage.setItem(
+                        "tasks",
+                        JSON.stringify(updated)
+                      )
 
-              </button>
+                    }}
+
+                    className="mt-3 bg-green-600 px-4 py-2 rounded-xl"
+
+                  >
+
+                    Mark Complete
+
+                  </button>
+
+              }
 
             </div>
 
