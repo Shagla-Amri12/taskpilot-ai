@@ -1,11 +1,54 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { generatePlan } from "./services/gemini"
 
 function App() {
-  const [task,setTask]=useState("")
-  const [date,setDate]=useState("")
-  const [plan,setPlan]=useState("")
-  const [tasks,setTasks]=useState([])
-  const [difficulty,setDifficulty]=useState("Easy")
+  const [task, setTask] = useState("")
+  const [date, setDate] = useState("")
+  const [plan, setPlan] = useState("")
+  const [tasks, setTasks] = useState(() => {
+
+    const saved =
+      localStorage.getItem("tasks")
+
+    return saved
+
+      ?
+
+      JSON.parse(saved)
+
+      :
+
+      []
+
+  })
+  const [priority, setPriority] = useState("")
+  const [difficulty, setDifficulty] = useState("Easy")
+  const completedTasks =
+    tasks.filter(
+      (task) => task.completed
+    ).length
+
+  const progress =
+    tasks.length
+
+      ?
+
+      (completedTasks / tasks.length) * 100
+
+      :
+
+      0
+  useEffect(() => {
+
+    localStorage.setItem(
+      "tasks",
+
+      JSON.stringify(tasks)
+
+    )
+
+  }, [tasks])
+
   return (
     <div className="min-h-screen bg-slate-950 text-white">
 
@@ -46,7 +89,11 @@ function App() {
           </h3>
 
           <p className="mt-4">
-            3 Pending
+
+            {tasks.length - completedTasks}
+
+            Pending
+
           </p>
         </div>
 
@@ -57,7 +104,7 @@ function App() {
           </h3>
 
           <p className="mt-4">
-            High Risk
+            {priority || "No Analysis"}
           </p>
         </div>
 
@@ -72,65 +119,107 @@ function App() {
           </p>
         </div>
       </section>
+      <section className="px-10">
+
+        <h2 className="text-2xl font-bold mb-4">
+
+          Progress
+
+        </h2>
+
+        <div
+          className="bg-slate-800 rounded-full h-6"
+        >
+
+          <div
+
+            style={{
+              width: `${progress}%`
+            }}
+
+            className="
+bg-green-500
+h-6
+rounded-full
+"
+
+          >
+
+          </div>
+
+        </div>
+
+
+        <p className="mt-2">
+
+          {progress.toFixed(0)}%
+          Completed
+
+        </p>
+
+      </section>
       {/* Add Task */}
 
-<section className="p-10">
+      <section className="p-10">
 
-<div className="bg-slate-900 p-8 rounded-3xl max-w-2xl">
+        <div className="bg-slate-900 p-8 rounded-3xl max-w-2xl">
 
-<h2 className="text-3xl font-bold mb-6">
-Create New Task
-</h2>
-
-
-<input
-type="text"
-placeholder="Task Name"
-value={task}
-onChange={(e)=>setTask(e.target.value)}
-className="w-full p-4 rounded-xl mb-4 text-white bg-slate-800"
-/>
+          <h2 className="text-3xl font-bold mb-6">
+            Create New Task
+          </h2>
 
 
-<input
-type="date"
-value={date}
-onChange={(e)=>setDate(e.target.value)}
-className="w-full p-4 rounded-xl mb-4 text-white bg-slate-800"
-/>
+          <input
+            type="text"
+            placeholder="Task Name"
+            value={task}
+            onChange={(e) => setTask(e.target.value)}
+            className="w-full p-4 rounded-xl mb-4 text-white bg-slate-800"
+          />
 
 
-<select
-value={difficulty}
-onChange={(e)=>setDifficulty(e.target.value)}
-className="w-full p-4 rounded-xl mb-4 text-white bg-slate-800"
->
-
-<option>Easy</option>
-<option>Medium</option>
-<option>Hard</option>
-
-</select>
+          <input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            className="w-full p-4 rounded-xl mb-4 text-white bg-slate-800"
+          />
 
 
-<button
-onClick={() => {
+          <select
+            value={difficulty}
+            onChange={(e) => setDifficulty(e.target.value)}
+            className="w-full p-4 rounded-xl mb-4 text-white bg-slate-800"
+          >
 
-let suggestion=""
+            <option>Easy</option>
+            <option>Medium</option>
+            <option>Hard</option>
 
-if(difficulty==="Easy"){
-suggestion="Finish in one focused session."
-}
+          </select>
 
-else if(difficulty==="Medium"){
-suggestion="Split into 2–3 sessions."
-}
 
-else{
-suggestion="Start immediately and divide into milestones."
-}
+          <button
+            onClick={() => {
 
-setPlan(`
+              let suggestion = ""
+
+              if (difficulty === "Easy") {
+                suggestion = "Finish in one focused session."
+                setPriority("🟢 Low Risk")
+              }
+
+              else if (difficulty === "Medium") {
+                suggestion = "Split into 2–3 sessions."
+                setPriority("🟡 Medium Risk")
+              }
+
+              else {
+                suggestion = "Start immediately and divide into milestones."
+                setPriority("🔴 High Risk")
+              }
+
+              setPlan(`
 Task: ${task}
 
 Deadline: ${date}
@@ -140,114 +229,115 @@ Priority: ${difficulty}
 AI Suggestion:
 ${suggestion}
 `)
-setTasks([
-...tasks,
 
-{
-task,
-date,
-difficulty,
-completed:false
-}
+              setTasks([
+                ...tasks,
 
-])
+                {
+                  task,
+                  date,
+                  difficulty,
+                  completed: false
+                }
 
-}}
+              ])
 
-className="bg-blue-600 px-6 py-3 rounded-xl"
->
+            }}
 
-Generate AI Plan
+            className="bg-blue-600 px-6 py-3 rounded-xl"
+          >
 
-</button>
+            Generate AI Plan
 
-
-{
-plan && (
-
-<div className="mt-6 bg-slate-800 p-5 rounded-xl">
-
-<h3 className="text-xl font-bold mb-3">
-AI Plan
-</h3>
-
-<p className="whitespace-pre-line">
-{plan}
-</p>
-
-</div>
+          </button>
 
 
-)
-}
+          {
+            plan && (
 
-</div>
+              <div className="mt-6 bg-slate-800 p-5 rounded-xl">
 
-</section>
-<div className="mt-6">
+                <h3 className="text-xl font-bold mb-3">
+                  AI Plan
+                </h3>
 
-<h3 className="text-2xl font-bold mb-4">
-Saved Tasks
-</h3>
+                <p className="whitespace-pre-line">
+                  {plan}
+                </p>
 
-{
-tasks.map((item,index)=>(
+              </div>
 
-<div
-key={index}
-className="bg-slate-800 p-4 rounded-xl mb-3"
->
 
-<p>{item.task}</p>
+            )
+          }
 
-<p>{item.date}</p>
+        </div>
 
-<p>{item.difficulty}</p>
+      </section>
+      <div className="mt-6">
 
-<p>
+        <h3 className="text-2xl font-bold mb-4">
+          Saved Tasks
+        </h3>
 
-Status:
+        {
+          tasks.map((item, index) => (
 
-{
-item.completed
-?
+            <div
+              key={index}
+              className="bg-slate-800 p-4 rounded-xl mb-3"
+            >
 
-" Completed"
+              <p>{item.task}</p>
 
-:
+              <p>{item.date}</p>
 
-" Pending"
+              <p>{item.difficulty}</p>
 
-}
+              <p>
 
-</p>
+                Status:
 
-<button
+                {
+                  item.completed
+                    ?
 
-onClick={()=>{
+                    " Completed"
 
-const updated=[...tasks]
+                    :
 
-updated[index].completed=true
+                    " Pending"
 
-setTasks(updated)
+                }
 
-}}
+              </p>
 
-className="mt-3 bg-green-600 px-4 py-2 rounded-xl"
+              <button
 
->
+                onClick={() => {
 
-Mark Complete
+                  const updated = [...tasks]
 
-</button>
+                  updated[index].completed = true
 
-</div>
+                  setTasks(updated)
 
-))
-}
+                }}
 
-</div>
+                className="mt-3 bg-green-600 px-4 py-2 rounded-xl"
+
+              >
+
+                Mark Complete
+
+              </button>
+
+            </div>
+
+          ))
+        }
+
+      </div>
 
 
     </div>
