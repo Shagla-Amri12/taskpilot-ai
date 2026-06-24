@@ -1,25 +1,18 @@
 import { GoogleGenAI } from "@google/genai"
 
 const ai = new GoogleGenAI({
-apiKey:
-import.meta.env.VITE_GEMINI_API_KEY
+    apiKey:
+        import.meta.env.VITE_GEMINI_API_KEY
 })
 
 export async function generatePlan(
-task,
-date,
-difficulty
-){
+    task,
+    date,
+    difficulty
+) {
 
-const response =
-await ai.models.generateContent({
+    return `
 
-model:
-"gemini-2.5-flash",
-
-contents:
-
-`
 Task:
 ${task}
 
@@ -29,14 +22,12 @@ ${date}
 Difficulty:
 ${difficulty}
 
-Create:
-Priority
-Daily Plan
-Productivity Advice
+AI Suggestion:
+
+Focus on the highest impact work first.
+Break into small steps.
+Complete before deadline.
+
 `
-
-})
-
-return response.text
 
 }

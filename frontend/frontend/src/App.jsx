@@ -3,8 +3,15 @@ import { generatePlan } from "./services/gemini"
 
 function App() {
   const [task, setTask] = useState("")
+  const recognition =
+
+    new window.webkitSpeechRecognition()
   const [date, setDate] = useState("")
   const [plan, setPlan] = useState("")
+  const [message, setMessage] = useState("")
+  const [schedule, setSchedule] = useState("")
+  const [search, setSearch] = useState("")
+  const [streak, setStreak] = useState(0)
   const [tasks, setTasks] = useState(() => {
 
     const saved =
@@ -106,6 +113,12 @@ function App() {
           <p className="mt-4">
             {priority || "No Analysis"}
           </p>
+          <p className="mt-3">
+
+            🔥 Streak:
+            {streak}
+
+          </p>
         </div>
 
 
@@ -115,7 +128,22 @@ function App() {
           </h3>
 
           <p className="mt-4">
-            82%
+
+            {
+              tasks.length
+
+                ?
+
+                Math.round(
+                  (completedTasks / tasks.length) * 100
+                )
+
+                :
+
+                0
+
+            }%
+
           </p>
         </div>
       </section>
@@ -177,6 +205,37 @@ rounded-full
             className="w-full p-4 rounded-xl mb-4 text-white bg-slate-800"
           />
 
+          <button
+
+            onClick={() => {
+
+              recognition.start()
+
+              recognition.onresult = (e) => {
+
+                setTask(
+                  e.results[0][0]
+                    .transcript
+                )
+
+              }
+
+            }}
+
+            className="
+            bg-purple-600
+            px-5
+            py-3
+            rounded-xl
+            mb-4
+            "
+
+          >
+
+            🎤 Speak Task
+
+          </button>
+
 
           <input
             type="date"
@@ -200,51 +259,86 @@ rounded-full
 
 
           <button
-            onClick={() => {
 
-              let suggestion = ""
+            onClick={async () => {
+              if (!task) {
 
-              if (difficulty === "Easy") {
-                suggestion = "Finish in one focused session."
-                setPriority("🟢 Low Risk")
+                setPlan("⚠️ The task name is required.")
+
+                return
+
+              }
+              if (
+
+                tasks.some(
+
+                  item =>
+
+                    item.task
+                      .toLowerCase()
+
+                    ===
+
+                    task
+                      .toLowerCase()
+
+                )
+
+              ) {
+
+                setPlan(
+                  "⚠️ Task already exists"
+                )
+
+                return
+
               }
 
-              else if (difficulty === "Medium") {
-                suggestion = "Split into 2–3 sessions."
-                setPriority("🟡 Medium Risk")
-              }
+              const result =
+                await generatePlan(
+                  task,
+                  date,
+                  difficulty
+                )
 
-              else {
-                suggestion = "Start immediately and divide into milestones."
-                setPriority("🔴 High Risk")
-              }
+              setPlan(result)
+              setSchedule(`
 
-              setPlan(`
-Task: ${task}
+              Today
+              → Start ${task}
 
-Deadline: ${date}
+              Tomorrow
+              → Continue ${task}
 
-Priority: ${difficulty}
+              Final Day
+              → Finish and Review
 
-AI Suggestion:
-${suggestion}
-`)
+              `)
 
               setTasks([
+
                 ...tasks,
 
                 {
+
                   task,
                   date,
                   difficulty,
                   completed: false
+
                 }
 
               ])
 
             }}
 
-            className="bg-blue-600 px-6 py-3 rounded-xl"
+            className="
+            bg-blue-600
+            px-6
+            py-3
+            rounded-xl
+            "
+
           >
 
             Generate AI Plan
@@ -270,88 +364,265 @@ ${suggestion}
 
             )
           }
+          {
+            schedule && (
+
+              <div
+                className="
+                mt-6
+                bg-slate-800
+                p-5
+                rounded-xl
+                "
+              >
+
+                <h3 className="text-xl font-bold">
+
+                  📅 AI Schedule
+
+                </h3>
+
+                <p
+                  className="whitespace-pre-line mt-3"
+                >
+
+                  {schedule}
+
+                </p>
+
+              </div>
+
+            )
+          }
 
         </div>
 
       </section>
+
+      {
+        message && (
+
+          <div
+            className="
+            bg-green-700
+            p-4
+            rounded-xl
+            m-6
+            "
+          >
+
+            {message}
+
+          </div>
+
+        )
+      }
+
       <div className="mt-6">
 
         <h3 className="text-2xl font-bold mb-4">
+
           Saved Tasks
+
         </h3>
+        <input
+
+          type="text"
+
+          placeholder="Search task..."
+
+          value={search}
+
+          onChange={(e) =>
+            setSearch(
+              e.target.value
+            )
+          }
+
+          className="
+          w-full
+          p-4
+          rounded-xl
+          mb-4
+          bg-slate-800
+          text-white
+          "
+
+        />
 
         {
-          tasks.map((item, index) => (
+          tasks
 
-            <div
-              key={index}
-              className="bg-slate-800 p-4 rounded-xl mb-3"
-            >
+            .filter((item) =>
 
-              <p>{item.task}</p>
+              item.task
+                .toLowerCase()
 
-              <p>{item.date}</p>
+                .includes(
 
-              <p>{item.difficulty}</p>
+                  search
+                    .toLowerCase()
 
-              <p>
+                )
 
-                Status:
+            )
+
+            .map((item, index) => (
+
+              <div
+
+                key={index}
+
+                className="
+              bg-slate-900
+              p-6
+              mb-5
+              rounded-3xl
+              border              
+              border-slate-700
+              hover:scale-105
+              duration-300
+              "
+
+              >
+
+                <p className="text-2xl font-bold">
+
+                  📌 {item.task}
+
+                </p>
+
+                <p className="mt-3">
+
+                  📅 {item.date}
+
+                </p>
+
+                <p className="mt-2">
+
+                  🔥 {item.difficulty}
+
+                </p>
+
+                <p>
+
+                  Status:
+
+                  {
+                    item.completed
+                      ?
+
+                      " Completed"
+
+                      :
+
+                      " Pending"
+
+                  }
+
+                </p>
 
                 {
                   item.completed
                     ?
 
-                    " Completed"
+                    <p className="text-green-400 mt-3">
+                      ✅ Completed
+                    </p>
 
                     :
 
-                    " Pending"
+                    <button
+
+                      onClick={() => {
+
+                        const updated = [...tasks]
+
+                        updated[index].completed = true
+
+                        setTasks(updated)
+
+                        localStorage.setItem(
+                          "tasks",
+                          JSON.stringify(updated)
+                        )
+
+                      }}
+
+                      className="mt-3 bg-green-600 px-4 py-2 rounded-xl"
+
+                    >
+
+                      Mark Complete
+
+                    </button>
 
                 }
+                <button
 
-              </p>
+                  onClick={() => {
 
-              {
-                item.completed
-                  ?
+                    const updated =
 
-                  <p className="text-green-400 mt-3">
-                    ✅ Completed
-                  </p>
+                      tasks.filter(
+                        (_, i) =>
 
-                  :
-
-                  <button
-
-                    onClick={() => {
-
-                      const updated = [...tasks]
-
-                      updated[index].completed = true
-
-                      setTasks(updated)
-
-                      localStorage.setItem(
-                        "tasks",
-                        JSON.stringify(updated)
+                          i !== index
                       )
 
-                    }}
+                    setTasks(updated)
+                    setMessage(
+                      "🔥 Great work! Keep moving."
+                    )
+                    setStreak(
+                      prev => prev + 1
+                    )
 
-                    className="mt-3 bg-green-600 px-4 py-2 rounded-xl"
+                  }}
 
-                  >
+                  className="
+                mt-3
+                ml-3
+                bg-red-600
+                px-4
+                py-2
+                rounded-xl
+                "
 
-                    Mark Complete
+                >
 
-                  </button>
+                  Delete
 
-              }
+                </button>
+                <button
 
-            </div>
+                  onClick={() => {
 
-          ))
+                    setTask(item.task)
+
+                    setDate(item.date)
+
+                    setDifficulty(item.difficulty)
+
+                  }}
+
+                  className="
+                mt-3
+                bg-yellow-600
+                px-4
+                py-2
+                rounded-xl
+                "
+
+                >
+
+                  Edit
+
+                </button>
+
+              </div>
+
+            ))
         }
 
       </div>
