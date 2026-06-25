@@ -1,17 +1,55 @@
 import { useState, useEffect } from "react"
-import { generatePlan } from "./services/gemini"
+import {
+
+  saveTask,
+
+  getTasks,
+
+  deleteTask,
+
+  updateTask
+
+}
+
+  from
+
+  "./services/api"
+import { generatePlan }
+
+  from
+
+  "./services/groq"
+
 
 function App() {
   const [task, setTask] = useState("")
+  const [
+
+    editIndex,
+
+    setEditIndex
+
+  ]
+
+    =
+
+    useState(
+
+      null
+
+    )
   const recognition =
 
     new window.webkitSpeechRecognition()
+  const today =
+    new Date()
   const [date, setDate] = useState("")
   const [plan, setPlan] = useState("")
   const [message, setMessage] = useState("")
   const [schedule, setSchedule] = useState("")
   const [search, setSearch] = useState("")
   const [streak, setStreak] = useState(0)
+  const [filter, setFilter] = useState("All")
   const [tasks, setTasks] = useState(() => {
 
     const saved =
@@ -45,6 +83,30 @@ function App() {
       :
 
       0
+
+  useEffect(() => {
+
+    async function load() {
+
+      const data =
+
+        await getTasks()
+
+      if (
+        data.length
+      ) {
+
+        setTasks(
+          data
+        )
+
+      }
+
+    }
+
+    load()
+
+  }, [])
   useEffect(() => {
 
     localStorage.setItem(
@@ -293,11 +355,72 @@ rounded-full
                 return
 
               }
+              if (
+
+                editIndex
+
+                !==
+
+                null
+
+              ) {
+
+                const updated =
+
+                  [...tasks]
+
+                updated[
+                  editIndex
+                ]
+
+                  =
+
+                {
+
+                  task,
+
+                  date,
+
+                  difficulty,
+
+                  completed:
+
+                    tasks[
+                      editIndex
+                    ]
+                      .completed
+
+                }
+
+                setTasks(
+                  updated
+                )
+
+                await updateTask(
+
+                  editIndex,
+
+                  updated[
+                  editIndex
+                  ]
+
+                )
+
+                setEditIndex(
+                  null
+                )
+
+                setMessage(
+                  "✅ Task Updated"
+                )
+
+                return
+
+              }
 
               const result =
                 await generatePlan(
                   task,
-                  date,
                   difficulty
                 )
 
@@ -315,20 +438,30 @@ rounded-full
 
               `)
 
-              setTasks([
+              const newTask = {
 
-                ...tasks,
+                task,
+                date,
+                difficulty,
+                completed: false
 
-                {
+              }
 
-                  task,
-                  date,
-                  difficulty,
-                  completed: false
+              setTasks(
 
-                }
+                [
 
-              ])
+                  ...tasks,
+
+                  newTask
+
+                ]
+
+              )
+
+              await saveTask(
+                newTask
+              )
 
             }}
 
@@ -447,25 +580,76 @@ rounded-full
           bg-slate-800
           text-white
           "
-
         />
+        <select
+
+          value={filter}
+
+          onChange={(e) =>
+            setFilter(
+              e.target.value
+            )
+          }
+
+          className="
+w-full
+p-4
+rounded-xl
+mb-4
+bg-slate-800
+text-white
+"
+
+        >
+
+          <option>All</option>
+
+          <option>Pending</option>
+
+          <option>Completed</option>
+
+        </select>
 
         {
           tasks
 
-            .filter((item) =>
+            .filter((item) => {
 
-              item.task
-                .toLowerCase()
+              const matchSearch =
 
-                .includes(
+                item.task
+                  .toLowerCase()
 
-                  search
-                    .toLowerCase()
+                  .includes(
+                    search
+                      .toLowerCase()
+                  )
 
-                )
+              const matchFilter =
 
-            )
+                filter === "All"
+
+                ||
+
+                (filter === "Completed"
+                  &&
+                  item.completed)
+
+                ||
+
+                (filter === "Pending"
+                  &&
+                  !item.completed)
+
+              return (
+
+                matchSearch
+                &&
+                matchFilter
+
+              )
+
+            })
 
             .map((item, index) => (
 
@@ -486,11 +670,77 @@ rounded-full
 
               >
 
-                <p className="text-2xl font-bold">
+                <div
+                  className="
+flex
+justify-between
+items-center
+"
+                >
 
-                  📌 {item.task}
+                  <p className="text-2xl font-bold">
 
-                </p>
+                    📌 {item.task}
+
+                  </p>
+
+                  {
+
+                    !item.completed
+
+                    &&
+
+                    item.date
+
+                    &&
+
+                    (
+
+                      new Date(item.date)
+
+                      <=
+
+                      new Date(
+
+                        Date.now()
+
+                        +
+
+                        2
+                        *
+                        24
+                        *
+                        60
+                        *
+                        60
+                        *
+                        1000
+
+                      )
+
+                    )
+
+                    &&
+
+                    (
+
+                      <p
+                        className="
+text-red-400
+font-bold
+"
+                      >
+
+                        ⚠️ Due Soon
+
+                      </p>
+
+                    )
+
+                  }
+
+                </div>
+
 
                 <p className="mt-3">
 
@@ -542,6 +792,8 @@ rounded-full
 
                         setTasks(updated)
 
+
+
                         localStorage.setItem(
                           "tasks",
                           JSON.stringify(updated)
@@ -571,6 +823,9 @@ rounded-full
                       )
 
                     setTasks(updated)
+                    deleteTask(
+                      index
+                    )
                     setMessage(
                       "🔥 Great work! Keep moving."
                     )
@@ -598,11 +853,21 @@ rounded-full
 
                   onClick={() => {
 
-                    setTask(item.task)
+                    setTask(
+                      item.task
+                    )
 
-                    setDate(item.date)
+                    setDate(
+                      item.date
+                    )
 
-                    setDifficulty(item.difficulty)
+                    setDifficulty(
+                      item.difficulty
+                    )
+
+                    setEditIndex(
+                      index
+                    )
 
                   }}
 
