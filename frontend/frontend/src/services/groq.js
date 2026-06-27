@@ -1,44 +1,48 @@
 export async function generatePlan(
-task,
-difficulty
-){
+    task,
+    difficulty
+) {
 
-try{
+    try {
 
-const response=
+        const response =
 
-await fetch(
+            await fetch(
 
-"https://api.groq.com/openai/v1/chat/completions",
+                "https://api.groq.com/openai/v1/chat/completions",
 
-{
+                {
 
-method:"POST",
+                    method: "POST",
 
-headers:{
+                    headers: {
 
-Authorization:
-`Bearer ${
-import.meta.env.VITE_GROQ_KEY
-}`,
+                        Authorization:
+                            `Bearer ${import.meta.env.VITE_GROQ_KEY
+                            }`,
 
-"Content-Type":
-"application/json"
+                        "Content-Type":
+                            "application/json"
 
-},
+                    },
 
-body:JSON.stringify({
+                    body: JSON.stringify({
 
-model:
-"llama-3.3-70b-versatile",
+                        model:
+                            "llama-3.3-70b-versatile",
+                        temperature: 0.4,
 
-messages:[
+                        max_tokens: 150,
 
-{
+                        messages: [
 
-role:"user",
+                            {
 
-content:`
+                                role: "user",
+
+                                content: `
+
+Create a SHORT and practical task plan.
 
 Task:
 ${task}
@@ -46,56 +50,60 @@ ${task}
 Difficulty:
 ${difficulty}
 
-Give:
+Rules:
 
-1 Plan
+1. 🎯 Goal → 1 line
+2. 📌 Steps → maximum 3 points
+3. 📅 Schedule → Today / Tomorrow / Final Day
+4. 🔥 Motivation → 1 short sentence
 
-2 Schedule
-
-3 Motivation
+Keep response under 80 words.
+No explanations.
+No paragraphs.
+Be concise.
 
 `
 
-}
+                            }
 
-]
+                        ]
 
-})
+                    })
 
-}
+                }
 
-)
+            )
 
-const data=
-await response.json()
-console.log(data)
-if(data.error){
+        const data =
+            await response.json()
+        console.log(data)
+        if (data.error) {
 
-return data.error.message
+            return data.error.message
 
-}
+        }
 
-return(
+        return (
 
-data
-?.choices?.[0]
-?.message
-?.content
+            data
+                ?.choices?.[0]
+                ?.message
+                ?.content
 
-||
+            ||
 
-"No response"
+            "No response"
 
-)
+        )
 
-}
+    }
 
-catch{
+    catch {
 
-return(
-"AI unavailable"
-)
+        return (
+            "AI unavailable"
+        )
 
-}
+    }
 
 }

@@ -1,55 +1,100 @@
-const express=require("express")
+const Task =
 
-const cors=require("cors")
+    require(
+
+        "./models/Task"
+
+    )
+const express = require("express")
+
+const mongoose = require("mongoose")
+
+const cors = require("cors")
 
 require("dotenv").config()
 
-const app=express()
+const app = express()
+mongoose.connect(
+
+    "mongodb://127.0.0.1:27017/taskpilot"
+
+)
+
+    .then(
+
+        () => {
+
+            console.log(
+
+                "MongoDB Connected"
+
+            )
+
+        }
+    )
 
 app.use(cors())
 
 app.use(express.json())
 
-let tasks=[]
+let tasks = []
 
-app.get("/",(req,res)=>{
+app.get("/", (req, res) => {
 
-res.send(
-"🚀 TaskPilot Backend Running"
-)
+    res.send(
+        "🚀 TaskPilot Backend Running"
+    )
 
 })
 
 app.post(
 
-"/tasks",
+    "/tasks",
 
-(req,res)=>{
+    async (
 
-tasks.push(
-req.body
-)
+        req,
 
-res.json({
+        res
 
-message:
-"Task Saved",
+    ) => {
 
-tasks
+        const newTask =
 
-})
+            await Task.create(
 
-}
+                req.body
 
+            )
+
+        res.json(
+
+            newTask
+
+        )
+
+    }
 )
 app.get(
 
 "/tasks",
 
-(req,res)=>{
+async (
+
+req,
+
+res
+
+)=>{
+
+const tasks=
+
+await Task.find()
 
 res.json(
+
 tasks
+
 )
 
 }
@@ -57,44 +102,42 @@ tasks
 
 app.listen(
 
-5000,
+    5000,
 
-()=>{
+    () => {
 
-console.log(
-"Server Running on 5000"
-)
+        console.log(
+            "Server Running on 5000"
+        )
 
-}
+    }
 
 )
 app.delete(
 
 "/tasks/:id",
 
-(req,res)=>{
+async (
 
-tasks=
+req,
 
-tasks.filter(
+res
 
-(
+)=>{
 
-_,
-
-index
-
-)=>
-
-index
-
-!=
+await Task.findByIdAndDelete(
 
 req.params.id
 
 )
 
-res.json(tasks)
+res.json({
+
+message:
+
+"Deleted"
+
+})
 
 }
 )
@@ -102,18 +145,34 @@ app.put(
 
 "/tasks/:id",
 
-(req,res)=>{
+async (
 
-tasks[
-req.params.id
-]
+req,
 
-=
+res
 
-req.body
+)=>{
+
+const updated=
+
+await Task.findByIdAndUpdate(
+
+req.params.id,
+
+req.body,
+
+{
+
+new:true
+
+}
+
+)
 
 res.json(
-tasks
+
+updated
+
 )
 
 }

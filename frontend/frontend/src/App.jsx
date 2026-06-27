@@ -50,6 +50,21 @@ function App() {
   const [search, setSearch] = useState("")
   const [streak, setStreak] = useState(0)
   const [filter, setFilter] = useState("All")
+  const [
+
+    loading,
+
+    setLoading
+
+  ]
+
+    =
+
+    useState(
+
+      false
+
+    )
   const [tasks, setTasks] = useState(() => {
 
     const saved =
@@ -91,10 +106,7 @@ function App() {
       const data =
 
         await getTasks()
-
-      if (
-        data.length
-      ) {
+      {
 
         setTasks(
           data
@@ -107,42 +119,129 @@ function App() {
     load()
 
   }, [])
+
   useEffect(() => {
 
-    localStorage.setItem(
-      "tasks",
+    if (
 
-      JSON.stringify(tasks)
+      Notification.permission
 
-    )
+      !==
+
+      "granted"
+
+    ) {
+
+      Notification.requestPermission()
+
+    }
+
+  }, [])
+
+  useEffect(() => {
+
+    if (
+
+      Notification.permission
+
+      ===
+
+      "granted"
+
+    ) {
+
+      tasks.forEach(
+
+        (item) => {
+
+          const today =
+
+            new Date()
+
+              .toISOString()
+
+              .split("T")[0]
+
+          const key =
+
+            `notify-${item._id}`
+
+          if (
+
+            !item.completed
+
+            &&
+
+            item.date === today
+
+            &&
+
+            !localStorage.getItem(key)
+
+          ) {
+
+            new Notification(
+
+              "📌 Task Reminder",
+
+              {
+
+                body:
+
+                  `${item.task} is due today`
+
+              }
+
+            )
+
+            localStorage.setItem(
+
+              key,
+
+              "done"
+
+            )
+
+          }
+
+        }
+
+      )
+
+    }
 
   }, [tasks])
 
+
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
 
-      {/* Navbar */}
-      <nav className="flex justify-between p-6">
 
-        <h1 className="text-2xl font-bold">
-          TaskPilot AI 🚀
+    <div className="min-h-screen bg-[#F5EEFF] text-black">
+
+      <nav className="flex items-center justify-between px-14 pt-10 pb-8">
+
+        <h1 className="text-[52px] font-black tracking-tight">
+
+          <span className="text-[#8B5CF6]">
+
+            ✨ TaskPilot
+
+          </span>
+
         </h1>
-
-        <button className="bg-blue-600 px-5 py-2 rounded-xl">
-          Add Task
-        </button>
 
       </nav>
 
 
-      {/* Hero */}
-      <section className="p-10">
 
-        <h2 className="text-5xl font-bold">
+      {/* Hero */}
+      <section className="max-w-7xl mx-auto">
+
+        <h2 className="text-5xl font-black leading-tight">
           Never Miss a Deadline
         </h2>
 
-        <p className="text-gray-400 mt-4">
+        <p className="text-300 mt-4 text-lg">
           AI helps plan, prioritize and complete tasks.
         </p>
 
@@ -150,63 +249,184 @@ function App() {
 
 
       {/* Cards */}
-      <section className="grid grid-cols-3 gap-6 p-10">
+      <section className="grid grid-cols-3 gap-8 px-14 mt-12">
 
-        <div className="bg-slate-900 p-6 rounded-2xl">
-          <h3 className="text-xl font-semibold">
+        <div className="bg-white rounded-[32px] shadow-lg p-8">
+
+          <div
+            className="
+w-16
+h-16
+rounded-2xl
+bg-[#F2EAFF]
+flex
+items-center
+justify-center
+text-3xl
+"
+          >
+
+            🗓️
+
+          </div>
+
+          <h3
+            className="
+mt-6
+text-[24px]
+font-bold
+"
+          >
+
             Today's Tasks
+
           </h3>
 
-          <p className="mt-4">
+          <p
+            className="
+mt-5
+text-[34px]
+font-black
+"
+          >
 
             {tasks.length - completedTasks}
+
+          </p>
+
+          <p
+            className="
+text-[#8D8A99]
+text-lg
+"
+          >
 
             Pending
 
           </p>
+
         </div>
 
+        <div className="bg-white rounded-[32px] shadow-lg p-8">
 
-        <div className="bg-slate-900 p-6 rounded-2xl">
-          <h3 className="text-xl font-semibold">
+          <div
+            className="
+w-16
+h-16
+rounded-2xl
+bg-[#F2EAFF]
+flex
+items-center
+justify-center
+text-3xl
+"
+          >
+
+            🧠
+
+          </div>
+
+          <h3
+            className="
+mt-6
+text-[24px]
+font-bold
+"
+          >
+
             AI Priority
+
           </h3>
 
-          <p className="mt-4">
+          <p
+            className="
+mt-5
+text-xl
+font-semibold
+"
+          >
+
             {priority || "No Analysis"}
-          </p>
-          <p className="mt-3">
-
-            🔥 Streak:
-            {streak}
 
           </p>
+
+          <p
+            className="
+mt-4
+text-[#8D8A99]
+text-lg
+"
+          >
+
+            🔥 Streak: {streak}
+
+          </p>
+
         </div>
 
 
-        <div className="bg-slate-900 p-6 rounded-2xl">
-          <h3 className="text-xl font-semibold">
+        <div className="bg-white rounded-[32px] shadow-lg p-8">
+
+          <div
+            className="
+w-16
+h-16
+rounded-2xl
+bg-[#F2EAFF]
+flex
+items-center
+justify-center
+text-3xl
+"
+          >
+
+            📈
+
+          </div>
+
+          <h3
+            className="
+mt-6
+text-[24px]
+font-bold
+"
+          >
+
             Productivity
+
           </h3>
 
-          <p className="mt-4">
+          <p
+            className="
+mt-5
+text-[34px]
+font-black
+"
+          >
 
             {
               tasks.length
-
                 ?
-
                 Math.round(
                   (completedTasks / tasks.length) * 100
                 )
-
                 :
-
                 0
-
             }%
 
           </p>
+
+          <p
+            className="
+text-[#8D8A99]
+text-lg
+"
+          >
+
+            Completed
+
+          </p>
+
         </div>
       </section>
       <section className="px-10">
@@ -217,20 +437,28 @@ function App() {
 
         </h2>
 
-        <div
-          className="bg-slate-800 rounded-full h-6"
-        >
+        <div className="bg-[#ECE3FF] h-8 rounded-full">
 
           <div
 
             style={{
+
               width: `${progress}%`
+
             }}
 
             className="
-bg-green-500
-h-6
+
+h-8
+
 rounded-full
+
+bg-gradient-to-r
+
+from-[#8B5CF6]
+
+to-[#B794FF]
+
 "
 
           >
@@ -264,7 +492,7 @@ rounded-full
             placeholder="Task Name"
             value={task}
             onChange={(e) => setTask(e.target.value)}
-            className="w-full p-4 rounded-xl mb-4 text-white bg-slate-800"
+            className="w-full p-4 rounded-2xl bg-[#F3EBFF] border border-[#E4D5FF]"
           />
 
           <button
@@ -285,12 +513,15 @@ rounded-full
             }}
 
             className="
-            bg-purple-600
-            px-5
-            py-3
-            rounded-xl
-            mb-4
-            "
+w-full
+bg-[#9D6BFF]
+text-white
+py-4
+rounded-2xl
+font-semibold
+hover:scale-105
+duration-300
+"
 
           >
 
@@ -398,13 +629,17 @@ rounded-full
 
                 await updateTask(
 
-                  editIndex,
+                  tasks[
+                    editIndex
+                  ]._id,
 
                   updated[
                   editIndex
                   ]
 
                 )
+
+
 
                 setEditIndex(
                   null
@@ -417,6 +652,9 @@ rounded-full
                 return
 
               }
+              setLoading(
+                true
+              )
 
               const result =
                 await generatePlan(
@@ -462,11 +700,19 @@ rounded-full
               await saveTask(
                 newTask
               )
+              setLoading(
+                false
+              )
+              setTask("")
+
+              setDate("")
+
+              setDifficulty("Easy")
 
             }}
 
             className="
-            bg-blue-600
+            bg-gradient-to-r from-blue-600 to-cyan-500 hover:-translate-y-2 hover:shadow-2xl hover:shadow-blue-500/20 duration-300 shadow-lg shadow-blue-500/30
             px-6
             py-3
             rounded-xl
@@ -474,7 +720,19 @@ rounded-full
 
           >
 
-            Generate AI Plan
+            {
+
+              loading
+
+                ?
+
+                "Generating..."
+
+                :
+
+                "Generate AI Plan"
+
+            }
 
           </button>
 
@@ -784,7 +1042,7 @@ font-bold
 
                     <button
 
-                      onClick={() => {
+                      onClick={async () => {
 
                         const updated = [...tasks]
 
@@ -792,16 +1050,33 @@ font-bold
 
                         setTasks(updated)
 
+                        await updateTask(
 
+                          item._id,
 
-                        localStorage.setItem(
-                          "tasks",
-                          JSON.stringify(updated)
+                          updated[index]
+
+                        )
+
+                        setMessage(
+
+                          "🔥 Great work! Keep moving."
+
                         )
 
                       }}
 
-                      className="mt-3 bg-green-600 px-4 py-2 rounded-xl"
+                      className="
+mt-4
+bg-[#B88BFF]
+text-white
+px-5
+py-3
+rounded-2xl
+hover:scale-105
+duration-300
+shadow-md
+"
 
                     >
 
@@ -812,37 +1087,46 @@ font-bold
                 }
                 <button
 
-                  onClick={() => {
+                  onClick={async () => {
 
                     const updated =
 
                       tasks.filter(
+
                         (_, i) =>
 
                           i !== index
+
                       )
 
                     setTasks(updated)
-                    deleteTask(
-                      index
+
+                    await deleteTask(
+
+                      item._id
+
                     )
+
                     setMessage(
-                      "🔥 Great work! Keep moving."
-                    )
-                    setStreak(
-                      prev => prev + 1
+
+                      "🗑 Task Deleted"
+
                     )
 
                   }}
 
                   className="
-                mt-3
-                ml-3
-                bg-red-600
-                px-4
-                py-2
-                rounded-xl
-                "
+mt-4
+ml-3
+bg-[#FF8CA1]
+text-white
+px-5
+py-3
+rounded-2xl
+hover:scale-105
+duration-300
+shadow-md
+"
 
                 >
 
@@ -872,12 +1156,17 @@ font-bold
                   }}
 
                   className="
-                mt-3
-                bg-yellow-600
-                px-4
-                py-2
-                rounded-xl
-                "
+mt-4
+ml-3
+bg-[#E9DAFF]
+text-black
+px-5
+py-3
+rounded-2xl
+hover:scale-105
+duration-300
+shadow-md
+"
 
                 >
 

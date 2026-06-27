@@ -1,57 +1,57 @@
-export async function saveTask(taskData){
+export async function saveTask(taskData) {
 
-const response =
+    const response =
 
-await fetch(
+        await fetch(
 
-"http://localhost:5000/tasks",
+            "http://localhost:5000/tasks",
 
-{
+            {
 
-method:"POST",
+                method: "POST",
 
-headers:{
+                headers: {
 
-"Content-Type":
-"application/json"
+                    "Content-Type":
+                        "application/json"
 
-},
+                },
 
-body:
+                body:
 
-JSON.stringify(
-taskData
-)
+                    JSON.stringify(
+                        taskData
+                    )
+
+            }
+
+        )
+
+    return await response.json()
 
 }
+export async function getTasks() {
 
-)
+    const response =
 
-return await response.json()
+        await fetch(
 
-}
-export async function getTasks(){
+            "http://localhost:5000/tasks"
 
-const response =
+        )
 
-await fetch(
-
-"http://localhost:5000/tasks"
-
-)
-
-return await response.json()
+    return await response.json()
 
 }
 export async function deleteTask(
 
-index
+id
 
 ){
 
 await fetch(
 
-`http://localhost:5000/tasks/${index}`,
+`http://localhost:5000/tasks/${id}`,
 
 {
 
@@ -64,7 +64,7 @@ method:"DELETE"
 }
 export async function updateTask(
 
-index,
+id,
 
 task
 
@@ -72,7 +72,7 @@ task
 
 await fetch(
 
-`http://localhost:5000/tasks/${index}`,
+`http://localhost:5000/tasks/${id}`,
 
 {
 
@@ -81,12 +81,18 @@ method:"PUT",
 headers:{
 
 "Content-Type":
+
 "application/json"
 
 },
 
 body:
-JSON.stringify(task)
+
+JSON.stringify(
+
+task
+
+)
 
 }
 
